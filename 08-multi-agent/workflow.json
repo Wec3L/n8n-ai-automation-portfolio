@@ -1,0 +1,27 @@
+{
+  "name": "Multi-Agent Team (Router, Researcher, Writer)",
+  "nodes": [
+    {"parameters": {"updates": ["message"], "additionalFields": {}}, "type": "n8n-nodes-base.telegramTrigger", "typeVersion": 1.2, "position": [0, 0], "id": "a1", "name": "Telegram Trigger"},
+    {"parameters": {"promptType": "define", "text": "={{ $json.message.text }}", "options": {"systemMessage": "You are the Router (team lead). For any request: 1) call the Researcher agent to gather facts, 2) pass those facts to the Writer agent to produce the final answer, 3) return the Writer's text as the final reply. For simple greetings answer yourself. Never invent facts."}}, "type": "@n8n/n8n-nodes-langchain.agent", "typeVersion": 2, "position": [260, 0], "id": "a2", "name": "Router Agent"},
+    {"parameters": {"model": {"__rl": true, "value": "gpt-4o-mini", "mode": "list"}, "options": {}}, "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi", "typeVersion": 1.2, "position": [120, 220], "id": "a3", "name": "Router Model"},
+    {"parameters": {"toolDescription": "Researcher: finds facts and current data for a question (uses Wikipedia and live exchange rates). Input: the question. Output: bullet-point facts.", "text": "={{ $fromAI('question', 'The question to research', 'string') }}", "options": {"systemMessage": "You are the Researcher. Use your tools to collect accurate, short bullet-point facts. No opinions, no final copy."}}, "type": "@n8n/n8n-nodes-langchain.agentTool", "typeVersion": 2.2, "position": [380, 220], "id": "a4", "name": "Researcher Agent"},
+    {"parameters": {"model": {"__rl": true, "value": "gpt-4o-mini", "mode": "list"}, "options": {}}, "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi", "typeVersion": 1.2, "position": [300, 440], "id": "a5", "name": "Researcher Model"},
+    {"parameters": {}, "type": "@n8n/n8n-nodes-langchain.toolWikipedia", "typeVersion": 1, "position": [440, 440], "id": "a6", "name": "Wikipedia"},
+    {"parameters": {"toolDescription": "Get current exchange rates for USD to all currencies", "url": "https://open.er-api.com/v6/latest/USD", "options": {}}, "type": "n8n-nodes-base.httpRequestTool", "typeVersion": 4.2, "position": [580, 440], "id": "a7", "name": "Exchange Rates"},
+    {"parameters": {"toolDescription": "Writer: turns research facts into a clear, friendly final answer in the user's language. Input: the original question plus the facts.", "text": "={{ $fromAI('brief', 'Original question plus research facts', 'string') }}", "options": {"systemMessage": "You are the Writer. Write a short, clear, friendly answer (max 120 words) in the user's language using ONLY the facts given."}}, "type": "@n8n/n8n-nodes-langchain.agentTool", "typeVersion": 2.2, "position": [700, 220], "id": "a8", "name": "Writer Agent"},
+    {"parameters": {"model": {"__rl": true, "value": "gpt-4o-mini", "mode": "list"}, "options": {}}, "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi", "typeVersion": 1.2, "position": [740, 440], "id": "a9", "name": "Writer Model"},
+    {"parameters": {"chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}", "text": "={{ $json.output }}", "additionalFields": {"appendAttribution": false}}, "type": "n8n-nodes-base.telegram", "typeVersion": 1.2, "position": [560, 0], "id": "a10", "name": "Send Reply"}
+  ],
+  "connections": {
+    "Telegram Trigger": {"main": [[{"node": "Router Agent", "type": "main", "index": 0}]]},
+    "Router Model": {"ai_languageModel": [[{"node": "Router Agent", "type": "ai_languageModel", "index": 0}]]},
+    "Researcher Agent": {"ai_tool": [[{"node": "Router Agent", "type": "ai_tool", "index": 0}]]},
+    "Writer Agent": {"ai_tool": [[{"node": "Router Agent", "type": "ai_tool", "index": 0}]]},
+    "Researcher Model": {"ai_languageModel": [[{"node": "Researcher Agent", "type": "ai_languageModel", "index": 0}]]},
+    "Wikipedia": {"ai_tool": [[{"node": "Researcher Agent", "type": "ai_tool", "index": 0}]]},
+    "Exchange Rates": {"ai_tool": [[{"node": "Researcher Agent", "type": "ai_tool", "index": 0}]]},
+    "Writer Model": {"ai_languageModel": [[{"node": "Writer Agent", "type": "ai_languageModel", "index": 0}]]},
+    "Router Agent": {"main": [[{"node": "Send Reply", "type": "main", "index": 0}]]}
+  },
+  "pinData": {}, "active": false, "settings": {"executionOrder": "v1"}, "tags": []
+}

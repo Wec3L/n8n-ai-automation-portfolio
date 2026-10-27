@@ -1,0 +1,199 @@
+{
+    "name": "AI Agent with Tools",
+    "nodes": [
+        {
+            "parameters": {
+                "updates": [
+                    "message"
+                ],
+                "additionalFields": {}
+            },
+            "type": "n8n-nodes-base.telegramTrigger",
+            "typeVersion": 1.5,
+            "position": [
+                0,
+                0
+            ],
+            "id": "81b6b213-054b-46d6-86c1-7794e5ea6a2c",
+            "name": "Telegram Trigger"
+        },
+        {
+            "parameters": {
+                "promptType": "define",
+                "text": "={{ $json.message.text }}",
+                "options": {
+                    "systemMessage": "You are a personal assistant for a creative studio. Use tools when needed: Leads sheet for questions about leads, Exchange Rates for currency, Calculator for math. Answer briefly in the user's language."
+                }
+            },
+            "type": "@n8n/n8n-nodes-langchain.agent",
+            "typeVersion": 3.1,
+            "position": [
+                224,
+                0
+            ],
+            "id": "c2175aa0-744d-475b-b39c-ff8e6c2a2f85",
+            "name": "AI Agent"
+        },
+        {
+            "parameters": {
+                "model": {
+                    "__rl": true,
+                    "value": "gpt-4o-mini",
+                    "mode": "list",
+                    "cachedResultName": "gpt-4o-mini"
+                },
+                "builtInTools": {},
+                "options": {}
+            },
+            "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+            "typeVersion": 1.3,
+            "position": [
+                96,
+                208
+            ],
+            "id": "14fd764b-a440-46f1-91ec-ed0b2784200e",
+            "name": "OpenAI Chat Model"
+        },
+        {
+            "parameters": {},
+            "type": "@n8n/n8n-nodes-langchain.toolCalculator",
+            "typeVersion": 1,
+            "position": [
+                256,
+                256
+            ],
+            "id": "559c52ec-ba21-4920-bda0-e476f04bfa07",
+            "name": "Calculator"
+        },
+        {
+            "parameters": {
+                "toolDescription": "Get current exchange rates for USD to all currencies",
+                "url": "https://open.er-api.com/v6/latest/USD",
+                "options": {}
+            },
+            "type": "n8n-nodes-base.httpRequestTool",
+            "typeVersion": 4.5,
+            "position": [
+                496,
+                224
+            ],
+            "id": "ee3a2850-f18b-42e5-88c9-d8e3432fe465",
+            "name": "Exchange Rates"
+        },
+        {
+            "parameters": {
+                "documentId": {
+                    "__rl": true,
+                    "value": "YOUR_GOOGLE_SHEET_ID",
+                    "mode": "id"
+                },
+                "sheetName": {
+                    "__rl": true,
+                    "value": "gid=0",
+                    "mode": "list",
+                    "cachedResultName": "Leads"
+                },
+                "options": {}
+            },
+            "type": "n8n-nodes-base.googleSheetsTool",
+            "typeVersion": 4.7,
+            "position": [
+                368,
+                192
+            ],
+            "id": "3e13d0a4-9d73-45fc-bc24-66830dcd09b4",
+            "name": "Leads sheet"
+        },
+        {
+            "parameters": {
+                "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+                "text": "={{ $json.output }}",
+                "additionalFields": {
+                    "appendAttribution": false
+                }
+            },
+            "type": "n8n-nodes-base.telegram",
+            "typeVersion": 1.2,
+            "position": [
+                512,
+                48
+            ],
+            "id": "65f285e5-bd7e-44c2-9605-d78dd8934c75",
+            "name": "Send a text message"
+        }
+    ],
+    "pinData": {},
+    "connections": {
+        "Telegram Trigger": {
+            "main": [
+                [
+                    {
+                        "node": "AI Agent",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "OpenAI Chat Model": {
+            "ai_languageModel": [
+                [
+                    {
+                        "node": "AI Agent",
+                        "type": "ai_languageModel",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Calculator": {
+            "ai_tool": [
+                [
+                    {
+                        "node": "AI Agent",
+                        "type": "ai_tool",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Exchange Rates": {
+            "ai_tool": [
+                [
+                    {
+                        "node": "AI Agent",
+                        "type": "ai_tool",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Leads sheet": {
+            "ai_tool": [
+                [
+                    {
+                        "node": "AI Agent",
+                        "type": "ai_tool",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "AI Agent": {
+            "main": [
+                [
+                    {
+                        "node": "Send a text message",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    },
+    "active": false,
+    "settings": {
+        "executionOrder": "v1"
+    },
+    "tags": []
+}
