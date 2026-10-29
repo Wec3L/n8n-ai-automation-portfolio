@@ -6,6 +6,7 @@ n8n workflows and AI agents I built and run myself: AI assistants, RAG, multi-ag
 
 | # | Project | What it shows |
 |---|---------|---------------|
+| 09 | [AI Job Radar (Telegram Job Scraper & AI Matcher)](09-ai-job-radar/) | Scheduled scraping of Telegram channels + n8n Community, deduplication, AI scoring with structured output, Telegram alerts |
 | 08 | [Multi-Agent Team (Router, Researcher, Writer)](08-multi-agent/) | Multi-agent orchestration, agents as tools, Wikipedia + live API tools |
 | 07 | [RAG Knowledge-Base Chatbot](07-rag-studio-bot/) | RAG with OpenAI embeddings and Pinecone, answers only from company docs |
 | 06 | [Multi-Tool AI Agent](06-ai-agent/) | Tool-calling agent with Google Sheets, HTTP API and Calculator |
